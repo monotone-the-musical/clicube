@@ -5,6 +5,7 @@
 | version | release date | details |
 | ------- | ------------ | ------- |
 | v1.0.0 | 30/12/2022 | initial release |
+| v1.0.1 | 31/12/2022 | yesterday count |
 
 ## Description
 

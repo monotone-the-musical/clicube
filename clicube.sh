@@ -71,8 +71,10 @@ function stats()
   min=$(echo $minandmax | awk '{print $1}')
   max=$(echo $minandmax | awk '{print $2}')
   today=$(date +%Y-%m-%d)
+  yesterday=$(date -u -d @$(($(date +%s)-86400)) +%Y-%m-%d)
   todaycount=$(cat $solvesfile |grep $today | wc | awk '{print $1}')
-  echo "solves: $totalsolves  today: $todaycount  best: $min  worst: $max"
+  yesterdaycount=$(cat $solvesfile |grep $yesterday | wc | awk '{print $1}')
+  echo "solves|$totalsolves  today|$todaycount  yesterday|$yesterdaycount  best|$min  worst|$max"
 } 
 
 function mo3()
