@@ -9,9 +9,12 @@
 
 ## Installation
 
-Clone the repository\n
-`git clone git@github.com:monotone-the-musical/clicube.git; cd clicube`\n
-Run clicube.sh\n
+Clone the repository
+
+`git clone git@github.com:monotone-the-musical/clicube.git; cd clicube`
+
+Run clicube.sh
+
 `./clicube.sh`
 
 If you want to access the program from anywere, place the following command on you `~/.bashrc` or shell equivalent
