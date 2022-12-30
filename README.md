@@ -9,13 +9,13 @@
 
 ## Installation
 
-Clone the repository
-`git clone git@github.com:monotone-the-musical/clicube.git; cd clicube`
-Run clicube.sh
+Clone the repository\n
+`git clone git@github.com:monotone-the-musical/clicube.git; cd clicube`\n
+Run clicube.sh\n
 `./clicube.sh`
 
 If you want to access the program from anywere, place the following command on you `~/.bashrc` or shell equivalent
-export PATH="/path/to/dir/that/contains/file:$PATH"
+`export PATH="/path/to/dir/that/contains/file:$PATH"`
 
 ## Description
 
