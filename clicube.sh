@@ -36,7 +36,12 @@ function showlog()
 {
   toshow=$1
   echo ; echo "Last ${toshow}:" ; echo
-  sort -r $solvesfile | head -${toshow} | awk -F, '{print " - "$1" = "$2}'
+  IFS=$'\n' sortedArray=($(sort -r <<<"${solvesArray[*]}")) ; unset IFS
+  for ((i = 0; i <= $toshow-1; i++)); do
+    if [[ ${sortedArray[$i]} ]]; then
+      echo "${sortedArray[$i]}" | awk -F, '{print " - "$1" = "$2}'
+    fi
+  done
 }
 
 function minmax()
@@ -47,13 +52,11 @@ function minmax()
   max=${numbers[0]}
   for number in ${numbers[@]:1}
   do
-    if [[ $number < $min ]]
-    then
-        min=$number
+    if awk "BEGIN {if ($number < $min) exit 0; exit 1}"; then
+      min=$number
     fi
-    if [[ $number > $max ]]
-    then
-        max=$number
+    if awk "BEGIN {if ($number > $max) exit 0; exit 1}"; then
+      max=$number
     fi
   done
   echo "$min $max"
@@ -61,66 +64,101 @@ function minmax()
 
 function stats()
 {
-  totalsolves=$(cat $solvesfile | wc | awk '{print $1}')
+  totalsolves=${#solvesArray[@]}
   numbers=""
-  while read element
-  do
-    numbers="${numbers} ${element}"
-  done < <(cat $solvesfile | awk -F, '{print $2}')
-  minandmax=$(minmax "$numbers")
-  min=$(echo $minandmax | awk '{print $1}')
-  max=$(echo $minandmax | awk '{print $2}')
+
+  if $calculateminmax ; then
+    while read element
+    do
+      numbers="${numbers} ${element}"
+    done < <(printf '%s\n' "${solvesArray[@]}" | awk -F, '{print $2}')
+    minandmax=$(minmax "$numbers")
+    min=$(echo $minandmax | awk '{print $1}')
+    max=$(echo $minandmax | awk '{print $2}')
+    globalmin=$min
+    globalmax=$max
+  else
+    min=$globalmin
+    max=$globalmax
+  fi
+
+  pb=$min
+
   today=$(date +%Y-%m-%d)
   yesterday=$(date -u -d @$(($(date +%s)-86400)) +%Y-%m-%d)
-  todaycount=$(cat $solvesfile |grep $today | wc | awk '{print $1}')
-  yesterdaycount=$(cat $solvesfile |grep $yesterday | wc | awk '{print $1}')
-  echo "solves|$totalsolves  today|$todaycount  yesterday|$yesterdaycount  best|$min  worst|$max"
+  todaycount=$(printf '%s\n' "${solvesArray[@]}" |grep $today | wc | awk '{print $1}')
+  yesterdaycount=$(printf '%s\n' "${solvesArray[@]}" |grep $yesterday | wc | awk '{print $1}')
+  echo -n "solves|$totalsolves  today|$todaycount  yesterday|$yesterdaycount  best|$min  worst|$max  "
 } 
 
 function mo3()
 {
-  if [ "$(head -3 $solvesfile | wc | awk '{print $1}')" != "3" ];then
+  if [ ${#solvesArray[@]} -lt 3 ] ; then
     return 
   fi
   total="0"
+  IFS=$'\n' sortedArray=($(sort -r <<<"${solvesArray[*]}")) ; unset IFS
   while read value
   do
     total=$(awk "BEGIN {print $total + $value}")
-  done < <(sort -r $solvesfile | head -3 | awk -F, '{print $2}')
+  done < <(printf '%s\n' "${sortedArray[@]}" | head -3 | awk -F, '{print $2}')
   mo3=$(awk "BEGIN {print $total / 3}")
   printf "mo3|%0.2f" $mo3
 }
 
 function aox()
 {
-  countcheck=$(head -${1} $solvesfile | wc | awk '{print $1}')
-  if [ "$countcheck" != "$1" ]; then
+  if [ "$2" == "" ]; then
+    goback="1"
+  else
+    goback="$2" # 2 == previous time
+  fi
+  if [ ${#solvesArray[@]} -lt $1 ]; then
     return
   fi
+
+  IFS=$'\n' sortedArray=($(sort -r <<<"${solvesArray[*]}")) ; unset IFS
+
   title="ao${1}" ; numbers="" ; total="0" ; totalcount="0"
+
   while read element
   do
     numbers="${numbers} ${element}"
-  done < <(sort -r $solvesfile | head -${1} | awk -F, '{print $2}')
+  done < <(printf '%s\n' "${sortedArray[@]}" | tail -n +${goback} | head -${1} | awk -F, '{print $2}')
+
   minandmax=$(minmax "$numbers")
   min=$(echo $minandmax | awk '{print $1}')
   max=$(echo $minandmax | awk '{print $2}')
+
   while read value
   do
     if [ "$value" != $max ] && [ "$value" != "$min" ]; then
       total=$(awk "BEGIN {print $total + $value}")
       totalcount=$((totalcount+1))
     fi
-  done < <(sort -r $solvesfile | head -${1} | awk -F, '{print $2}')
+  done < <(printf '%s\n' "${sortedArray[@]}" | tail -n +${goback} | head -${1} | awk -F, '{print $2}')
+
   aof=$(awk "BEGIN {print $total / $totalcount}")
+
   printf "${title}|%0.2f" $aof
 }
 
+#
+# main code starts
+#
+
 tput civis
-timeresult=false ; del_time=false ; log_change=false ; globallog="5"
+timeresult=false ; del_time=false ; log_change=false ; globallog="5" 
+calculateprevious=true
+calculateminmax=true
+showprevao=true
+pb=9999
 spacer="                    "
 
 touch $solvesfile
+
+# put file into array
+mapfile -t solvesArray < $solvesfile
 
 while true; do
   counter=0
@@ -131,6 +169,8 @@ while true; do
       del_time=false
       thetime=$(tail -1 $solvesfile | awk -F, '{print $2}')
       sed -i '$ d' ${solvesfile}
+      unset solvesArray[-1]
+      calculateprevious=true
       echo ; echo "deleting time ${thetime}... "
       sleep 1
       timeresult=false
@@ -143,23 +183,115 @@ while true; do
   iteration_one=true
 
   if $timeresult ; then
+
+    if ! $calculateminmax ; then
+      if awk "BEGIN {if ($result < $globalmin) exit 0; exit 1}"; then
+        globalmin=$result
+      fi
+      if awk "BEGIN {if ($result > $globalmax) exit 0; exit 1}"; then
+        globalmax=$result
+      fi
+    fi
+
     clear
     echo ; echo "${scramble}"
     echo ; printf "${spacer}%0.2f" $result
     if ! $another_scramble && ! $log_change; then
       echo "`date +%Y-%m-%d" "%H:%M:%S`,${result},${scramble}" >> $solvesfile
+      solvesArray+=("`date +%Y-%m-%d" "%H:%M:%S`,${result},${scramble}")
     fi
-    echo ; showlog "${globallog}"
-    echo ; stats
-    echo ; mo3 ; echo -n "  " ; aox "5" ; echo -n "  " ; aox "12" ; echo -n "  " ; aox "25" ; echo -n "  " ; aox "50" ; echo -n "  " ; aox "100"
-    echo ; echo ; echo "[space] / [s]cramble / [d]elete / [q]uit"
+
   else
     echo ; echo "${scramble}" ; echo
-    echo ; showlog "${globallog}"
-    echo ; stats
-    echo ; mo3 ; echo -n "  " ; aox "5" ; echo -n "  " ; aox "12" ; echo -n "  " ; aox "25" ; echo -n "  " ; aox "50" ; echo -n "  " ; aox "100"
-    echo ; echo ; echo "[space] / [s]cramble / [d]elete / [q]uit"
   fi
+
+  echo ; showlog "${globallog}"
+  echo ; stats ; mo3
+  echo ; echo
+
+  if [[ "${#globalmin}" -eq 0 ]] || [ "${globalmax}" == "${globalmin}" ] ; then
+    calculateminmax=true
+  else
+    calculateminmax=false
+  fi
+
+  ao5=$(aox "5")
+  ao5val=$(echo ${ao5} | awk -F\| '{print $2}')
+  ao12=$(aox "12")
+  ao12val=$(echo ${ao12} | awk -F\| '{print $2}')
+  ao25=$(aox "25")
+  ao25val=$(echo ${ao25} | awk -F\| '{print $2}')
+  ao50=$(aox "50")
+  ao50val=$(echo ${ao50} | awk -F\| '{print $2}')
+  ao100=$(aox "100")
+  ao100val=$(echo ${ao100} | awk -F\| '{print $2}')
+
+  if $calculateprevious && $showprevao; then
+    ao5p=$(aox "5" "2")
+    ao5pval=$(echo ${ao5p} | awk -F\| '{print $2}')
+    ao5pvalArray+=("${ao5pval}")
+    ao5pvalArray+=("${ao5pval}")
+  
+    ao12p=$(aox "12" "2")
+    ao12pval=$(echo ${ao12p} | awk -F\| '{print $2}')
+    ao12pvalArray+=("${ao12pval}")
+    ao12pvalArray+=("${ao12pval}")
+  
+    ao25p=$(aox "25" "2")
+    ao25pval=$(echo ${ao25p} | awk -F\| '{print $2}')
+    ao25pvalArray+=("${ao25pval}")
+    ao25pvalArray+=("${ao25pval}")
+  
+    ao50p=$(aox "50" "2")
+    ao50pval=$(echo ${ao50p} | awk -F\| '{print $2}')
+    ao50pvalArray+=("${ao50pval}")
+    ao50pvalArray+=("${ao50pval}")
+  
+    ao100p=$(aox "100" "2")
+    ao100pval=$(echo ${ao100p} | awk -F\| '{print $2}')
+    ao100pvalArray+=("${ao100pval}")
+    ao100pvalArray+=("${ao100pval}")
+
+    calculateprevious=false
+  
+  else
+
+    if ! $another_scramble && $showprevao; then
+      ao5pvalArray+=("${ao5val}")
+      ao12pvalArray+=("${ao12val}")
+      ao25pvalArray+=("${ao25val}")
+      ao50pvalArray+=("${ao50val}")
+      ao100pvalArray+=("${ao100val}")
+    fi
+
+  fi
+
+  if $showprevao; then 
+    if [ ${ao5pvalArray[-2]} ]; then
+      ao5diff="($(awk "BEGIN {printf \"%.2f\", $ao5val-${ao5pvalArray[-2]}}"))"
+    fi
+    if [ ${ao12pvalArray[-2]} ]; then
+      ao12diff="($(awk "BEGIN {printf \"%.2f\", $ao12val-${ao12pvalArray[-2]}}"))"
+    fi
+    if [ ${ao25pvalArray[-2]} ]; then
+      ao25diff="($(awk "BEGIN {printf \"%.2f\", $ao25val-${ao25pvalArray[-2]}}"))"
+    fi
+    if [ ${ao50pvalArray[-2]} ]; then
+      ao50diff="($(awk "BEGIN {printf \"%.2f\", $ao50val-${ao50pvalArray[-2]}}"))"
+    fi
+    if [ ${ao100pvalArray[-2]} ]; then
+      ao100diff="($(awk "BEGIN {printf \"%.2f\", $ao100val-${ao100pvalArray[-2]}}"))"
+    fi
+  else
+    ao5diff=""
+    ao12diff=""
+    ao25diff=""
+    ao50diff=""
+    ao100diff=""
+  fi
+
+  echo -n "$ao5$ao5diff  $ao12$ao12diff  $ao25$ao25diff  $ao50$ao50diff  $ao100$ao100diff"
+  echo ; echo ; echo "[space] / [s]cramble / [d]elete / [p]reviousdiff / [q]uit"
 
   another_scramble=false
   log_change=false
@@ -174,6 +306,15 @@ while true; do
      break
    elif [ "$key" == "d" ]; then
      del_time=true
+     calculateminmax=true
+     break
+   elif [ "$key" == "p" ]; then
+     if $showprevao; then
+       showprevao=false
+     else
+       showprevao=true
+     fi
+     log_change=true
      break
    elif [[ "$key" =~ ^[1-9]+$ ]]; then
      globallog=$((5 * $key))
@@ -213,6 +354,12 @@ while true; do
         iteration_one=false
       else
         timeresult=true
+        checkpb=$(minmax "$result $pb" | awk '{print $1}')
+        if [ $result == $checkpb ]; then
+          clear ; echo ; echo ; echo
+          echo  "$spacerNEW  * * * NEW PB * * *    $result    * * * NEW PB * * *"
+          sleep 3
+        fi
         break
       fi
     fi

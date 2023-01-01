@@ -2,23 +2,11 @@
 
 ## Version
 
-| version | release date | details         |
-| ------- | ------------ | --------------- |
-| v1.0.0  | 30/12/2022   | initial release |
-| v1.0.1  | 31/12/2022   | yesterday count |
-
-## Installation
-
-Clone the repository
-
-`git clone git@github.com:monotone-the-musical/clicube.git; cd clicube`
-
-Run clicube.sh
-
-`./clicube.sh`
-
-If you want to access the program from anywere, place the following command on you `~/.bashrc` or shell equivalent
-`export PATH="/path/to/dir/that/contains/file:$PATH"`
+| version | release date | details                                |
+| ------- | ------------ | -------------------------------------- |
+| v1.0.2  | 01/01/2023   | previous average difference, bug fixes |
+| v1.0.1  | 31/12/2022   | yesterday count                        |
+| v1.0.0  | 30/12/2022   | initial release                        |
 
 ## Description
 
@@ -29,6 +17,20 @@ _clicube_ is a simple 3x3 speed-cubing timer written in bash.
 ![](./screenshot1.png)
 
 <br>
+
+## Installation
+
+Clone the repository
+
+`git clone https://github.com/monotone-the-musical/clicube.git; cd clicube`
+
+Run clicube.sh
+
+`./clicube.sh`
+
+If you want to access the program from anywhere, place the following command on your `~/.bashrc` or shell equivalent:
+
+`export PATH="/path/to/dir/that/contains/file:$PATH"`
 
 ## Requirements
 
@@ -41,10 +43,11 @@ _clicube_ is a simple 3x3 speed-cubing timer written in bash.
 - Release **[spacebar]** to start the timer.
 - Press the **[spacebar]** again to stop the timer, (auto-generates a new scramble).
 - Will also work as single taps of the **[spacebar]** if you prefer.
-- **s**: generate another scramble.
-- **d**: delete the last recorded time.
+- **s**: generate another \[s\]cramble.
+- **d**: \[d\]elete the last recorded time.
+- **p**: toggle showing time difference of \[p\]revious average.
 - **1** - **9**: list recorded times (x 5).
-- **q**: quit.
+- **q**: \[q\]uit.
 
 ## Stats
 
