@@ -319,6 +319,7 @@ while true; do
    elif [[ "$key" =~ ^[1-9]+$ ]]; then
      globallog=$((5 * $key))
      log_change=true
+     calculateprevious=true
      break
    fi
   done
