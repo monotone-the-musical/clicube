@@ -168,7 +168,7 @@ while true; do
     if ! $log_change; then
       del_time=false
       thetime=$(tail -1 $solvesfile | awk -F, '{print $2}')
-      sed -i '$ d' ${solvesfile}
+      sed -i --follow-symlinks '$ d' ${solvesfile}
       unset solvesArray[-1]
       calculateprevious=true
       echo ; echo "deleting time ${thetime}... "
