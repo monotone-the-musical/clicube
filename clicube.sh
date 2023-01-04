@@ -44,6 +44,101 @@ function showlog()
   done
 }
 
+function streakinit()
+{
+  global10hit=false
+  global15hit=false
+  global20hit=false
+  global25hit=false
+  global30hit=false
+  echo "loading..."
+  global10=0
+  global15=0
+  global20=0
+  global25=0
+  global30=0
+  IFS=$'\n' sortedArray=($(sort -r <<<"${solvesArray[*]}")) ; unset IFS
+  for record in "${sortedArray[@]}"; do
+    thetime=$(echo "$record" | awk -F, '{print $2}')
+    if awk "BEGIN {if ($thetime < 10) exit 0; exit 1}"; then
+      if ! $global15hit && ! $global20hit && ! $global25hit && ! $global30hit ; then
+        global10=$((global10 + 1))
+        global15=$((global15 + 1))
+        global20=$((global20 + 1))
+        global25=$((global25 + 1))
+        global30=$((global30 + 1))
+        global10hit=true
+      else
+        break
+      fi
+    elif awk "BEGIN {if ($thetime < 15) exit 0; exit 1}"; then
+      if ! $global20hit && ! $global25hit && ! $global30hit ; then
+        global15=$((global15 + 1))
+        global20=$((global20 + 1))
+        global25=$((global25 + 1))
+        global30=$((global30 + 1))
+        global15hit=true
+      else
+        break
+      fi
+    elif awk "BEGIN {if ($thetime < 20) exit 0; exit 1}"; then
+      if ! $global25hit && ! $global30hit ; then
+        global20=$((global20 + 1))
+        global25=$((global25 + 1))
+        global30=$((global30 + 1))
+        global20hit=true
+      else
+        break
+      fi
+    elif awk "BEGIN {if ($thetime < 25) exit 0; exit 1}"; then
+      if ! $global30hit ; then
+        global25=$((global25 + 1))
+        global30=$((global30 + 1))
+        global25hit=true
+      else
+        break
+      fi
+    elif awk "BEGIN {if ($thetime < 30) exit 0; exit 1}"; then
+      global30=$((global30 + 1))
+      global30hit=true
+    elif awk "BEGIN {if ($thetime > 30) exit 0; exit 1}"; then
+      break 
+    fi
+  done
+}
+
+function streakupdate()
+{
+  thetime=$1
+  if awk "BEGIN {if ($thetime < 10) exit 0; exit 1}"; then
+    global10=$((global10 + 1))
+    global15=$((global15 + 1))
+    global20=$((global20 + 1))
+    global25=$((global25 + 1))
+    global30=$((global30 + 1))
+  elif awk "BEGIN {if ($thetime < 15) exit 0; exit 1}"; then
+    global15=$((global15 + 1))
+    global20=$((global20 + 1))
+    global25=$((global25 + 1))
+    global30=$((global30 + 1))
+  elif awk "BEGIN {if ($thetime < 20) exit 0; exit 1}"; then
+    global20=$((global20 + 1))
+    global25=$((global25 + 1))
+    global30=$((global30 + 1))
+  elif awk "BEGIN {if ($thetime < 25) exit 0; exit 1}"; then
+    global25=$((global25 + 1))
+    global30=$((global30 + 1))
+  elif awk "BEGIN {if ($thetime < 30) exit 0; exit 1}"; then
+    global30=$((global30 + 1))
+  elif awk "BEGIN {if ($thetime > 30) exit 0; exit 1}"; then
+    global10=0
+    global15=0
+    global20=0
+    global25=0
+    global30=0
+  fi
+}
+
 function minmax()
 {
   IFS=" "
@@ -90,6 +185,19 @@ function stats()
   yesterdaycount=$(printf '%s\n' "${solvesArray[@]}" |grep $yesterday | wc | awk '{print $1}')
   echo -n "solves|$totalsolves  today|$todaycount  yesterday|$yesterdaycount  best|$min  worst|$max  "
 } 
+
+function todaystats()
+{
+  numbers=""
+  today=$(date +%Y-%m-%d)
+  while read element
+  do
+    numbers="${numbers} ${element}"
+  done < <(printf '%s\n' "${solvesArray[@]}" | grep ${today} | awk -F, '{print $2}')
+  minandmax=$(minmax "$numbers")
+  todayminglobal=$(echo $minandmax | awk '{print $1}')
+  echo "best-today|$todayminglobal  worst-today|$(echo $minandmax | awk '{print $2}')"
+}
 
 function mo3()
 {
@@ -143,6 +251,16 @@ function aox()
   printf "${title}|%0.2f" $aof
 }
 
+function congrats()
+{
+  atime=$1
+  amessage=$2
+  asleeptime=$3
+  clear ; echo ; echo ; echo
+  echo  "$spacerNEW  * * * ${amessage} * * *    ${atime}    * * * ${amessage} * * *"
+  sleep $asleeptime
+}
+
 #
 # main code starts
 #
@@ -156,9 +274,9 @@ pb=9999
 spacer="                    "
 
 touch $solvesfile
-
-# put file into array
 mapfile -t solvesArray < $solvesfile
+
+streakinit
 
 while true; do
   counter=0
@@ -174,6 +292,7 @@ while true; do
       echo ; echo "deleting time ${thetime}... "
       sleep 1
       timeresult=false
+      streakinit
     fi
   fi
 
@@ -183,6 +302,9 @@ while true; do
   iteration_one=true
 
   if $timeresult ; then
+
+    streakupdate "$result"
+    timeresult=false
 
     if ! $calculateminmax ; then
       if awk "BEGIN {if ($result < $globalmin) exit 0; exit 1}"; then
@@ -291,6 +413,9 @@ while true; do
   fi
 
   echo -n "$ao5$ao5diff  $ao12$ao12diff  $ao25$ao25diff  $ao50$ao50diff  $ao100$ao100diff"
+  echo ; echo
+  todaystats
+  echo ; echo -n "<10|$global10  <15|$global15  <20|$global20  <25|$global25  <30|$global30"
   echo ; echo ; echo "[space] / [s]cramble / [d]elete / [p]reviousdiff / [q]uit"
 
   another_scramble=false
@@ -303,6 +428,7 @@ while true; do
      echo ; exit
    elif [ "$key" == "s" ]; then
      another_scramble=true
+     timeresult=false
      break
    elif [ "$key" == "d" ]; then
      del_time=true
@@ -356,10 +482,11 @@ while true; do
       else
         timeresult=true
         checkpb=$(minmax "$result $pb" | awk '{print $1}')
+        checktodaypb=$(minmax "$result $todayminglobal" | awk '{print $1}')
         if [ $result == $checkpb ]; then
-          clear ; echo ; echo ; echo
-          echo  "$spacerNEW  * * * NEW PB * * *    $result    * * * NEW PB * * *"
-          sleep 3
+          congrats $result "NEW PB" "3"
+        elif [ $result == $checktodaypb ]; then
+          congrats $result "BEST TIME TODAY" "2"
         fi
         break
       fi

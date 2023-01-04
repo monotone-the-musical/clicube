@@ -2,11 +2,12 @@
 
 ## Version
 
-| version | release date | details                                |
-| ------- | ------------ | -------------------------------------- |
-| v1.0.2  | 01/01/2023   | previous average difference, bug fixes |
-| v1.0.1  | 31/12/2022   | yesterday count                        |
-| v1.0.0  | 30/12/2022   | initial release                        |
+| version | release date | details                                 |
+| ------- | ------------ | --------------------------------------- |
+| v1.0.3  | 05/01/2023   | streaks count, best and worst for today |
+| v1.0.2  | 01/01/2023   | previous average difference, bug fixes  |
+| v1.0.1  | 31/12/2022   | yesterday count                         |
+| v1.0.0  | 30/12/2022   | initial release                         |
 
 ## Description
 
