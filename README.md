@@ -4,8 +4,9 @@
 
 | version | release date | details                                 |
 | ------- | ------------ | --------------------------------------- |
-| v1.0.3  | 05/01/2023   | streaks count, best and worst for today |
-| v1.0.2  | 01/01/2023   | previous average difference, bug fixes  |
+| v1.0.4  | 06/01/2023   | cleanup display output with printf <br> total days <br> average per day <br> congrats message on streaks hatrick |
+| v1.0.3  | 05/01/2023   | streaks count <br> best and worst for today |
+| v1.0.2  | 01/01/2023   | previous average difference <br> bug fixes  |
 | v1.0.1  | 31/12/2022   | yesterday count                         |
 | v1.0.0  | 30/12/2022   | initial release                         |
 
@@ -47,6 +48,7 @@ If you want to access the program from anywhere, place the following command on 
 - **s**: generate another \[s\]cramble.
 - **d**: \[d\]elete the last recorded time.
 - **p**: toggle showing time difference of \[p\]revious average.
+- **c**: toggle showing \[c\]ongratulations message for streaks hatricks.
 - **1** - **9**: list recorded times (x 5).
 - **q**: \[q\]uit.
 

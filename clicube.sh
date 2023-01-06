@@ -35,13 +35,40 @@ function scramble()
 function showlog() 
 {
   toshow=$1
-  echo ; echo "Last ${toshow}:" ; echo
+  ascramble=$2
+  atime=$3
+  echo ; echo "Last ${toshow}:"
   IFS=$'\n' sortedArray=($(sort -r <<<"${solvesArray[*]}")) ; unset IFS
+  echo ".-----------------------------."
   for ((i = 0; i <= $toshow-1; i++)); do
     if [[ ${sortedArray[$i]} ]]; then
-      echo "${sortedArray[$i]}" | awk -F, '{print " - "$1" = "$2}'
+      if [ "$i" -gt 0 ]; then
+        if [ "$i" -eq 3 ]; then
+          echo "${sortedArray[$i]}" | awk -F, '{printf "| %19s | %5s |",$1,$2}'
+          echo "  ${atime}"
+        else
+          echo "${sortedArray[$i]}" | awk -F, '{printf "| %19s | %5s |\n",$1,$2}'
+        fi
+      else
+        echo "${sortedArray[$i]}" | awk -F, '{printf "| %19s | %5s |",$1,$2}'
+        echo "  ${ascramble}"
+      fi
+    else
+      if [ "$i" -gt 0 ]; then
+        if [ "$i" -eq 3 ]; then
+          printf "| %19s | %5s |" " " " "
+          echo "  ${atime}"
+        else
+          printf "| %19s | %5s |\n" " " " "
+        fi
+      else
+        printf "| %19s | %5s |" " " " "
+        echo "  ${ascramble}"
+      fi
     fi
   done
+
+  echo "'-----------------------------'"
 }
 
 function streakinit()
@@ -53,20 +80,30 @@ function streakinit()
   global30hit=false
   echo "loading..."
   global10=0
+  global10ht=0
   global15=0
+  global15ht=0
   global20=0
+  global20ht=0
   global25=0
+  global25ht=0
   global30=0
+  global30ht=0
   IFS=$'\n' sortedArray=($(sort -r <<<"${solvesArray[*]}")) ; unset IFS
   for record in "${sortedArray[@]}"; do
     thetime=$(echo "$record" | awk -F, '{print $2}')
     if awk "BEGIN {if ($thetime < 10) exit 0; exit 1}"; then
       if ! $global15hit && ! $global20hit && ! $global25hit && ! $global30hit ; then
         global10=$((global10 + 1))
+        global10ht=$((global10ht + 1))
         global15=$((global15 + 1))
+        global15ht=$((global15ht + 1))
         global20=$((global20 + 1))
+        global20ht=$((global20ht + 1))
         global25=$((global25 + 1))
+        global25ht=$((global25ht + 1))
         global30=$((global30 + 1))
+        global30ht=$((global30ht + 1))
         global10hit=true
       else
         break
@@ -74,9 +111,13 @@ function streakinit()
     elif awk "BEGIN {if ($thetime < 15) exit 0; exit 1}"; then
       if ! $global20hit && ! $global25hit && ! $global30hit ; then
         global15=$((global15 + 1))
+        global15ht=$((global15ht + 1))
         global20=$((global20 + 1))
+        global20ht=$((global20ht + 1))
         global25=$((global25 + 1))
+        global25ht=$((global25ht + 1))
         global30=$((global30 + 1))
+        global30ht=$((global30ht + 1))
         global15hit=true
       else
         break
@@ -84,8 +125,11 @@ function streakinit()
     elif awk "BEGIN {if ($thetime < 20) exit 0; exit 1}"; then
       if ! $global25hit && ! $global30hit ; then
         global20=$((global20 + 1))
+        global20ht=$((global20ht + 1))
         global25=$((global25 + 1))
+        global25ht=$((global25ht + 1))
         global30=$((global30 + 1))
+        global30ht=$((global30ht + 1))
         global20hit=true
       else
         break
@@ -93,13 +137,16 @@ function streakinit()
     elif awk "BEGIN {if ($thetime < 25) exit 0; exit 1}"; then
       if ! $global30hit ; then
         global25=$((global25 + 1))
+        global25ht=$((global25ht + 1))
         global30=$((global30 + 1))
+        global30ht=$((global30ht + 1))
         global25hit=true
       else
         break
       fi
     elif awk "BEGIN {if ($thetime < 30) exit 0; exit 1}"; then
       global30=$((global30 + 1))
+      global30ht=$((global30ht + 1))
       global30hit=true
     elif awk "BEGIN {if ($thetime > 30) exit 0; exit 1}"; then
       break 
@@ -112,30 +159,80 @@ function streakupdate()
   thetime=$1
   if awk "BEGIN {if ($thetime < 10) exit 0; exit 1}"; then
     global10=$((global10 + 1))
+    global10ht=$((global10ht + 1))
     global15=$((global15 + 1))
+    global15ht=$((global15ht + 1))
     global20=$((global20 + 1))
+    global20ht=$((global20ht + 1))
     global25=$((global25 + 1))
+    global25ht=$((global25ht + 1))
     global30=$((global30 + 1))
+    global30ht=$((global30ht + 1))
   elif awk "BEGIN {if ($thetime < 15) exit 0; exit 1}"; then
     global15=$((global15 + 1))
+    global15ht=$((global15ht + 1))
     global20=$((global20 + 1))
+    global20ht=$((global20ht + 1))
     global25=$((global25 + 1))
+    global25ht=$((global25ht + 1))
     global30=$((global30 + 1))
+    global30ht=$((global30ht + 1))
   elif awk "BEGIN {if ($thetime < 20) exit 0; exit 1}"; then
     global20=$((global20 + 1))
+    global20ht=$((global20ht + 1))
     global25=$((global25 + 1))
+    global25ht=$((global25ht + 1))
     global30=$((global30 + 1))
+    global30ht=$((global30ht + 1))
   elif awk "BEGIN {if ($thetime < 25) exit 0; exit 1}"; then
     global25=$((global25 + 1))
+    global25ht=$((global25ht + 1))
     global30=$((global30 + 1))
+    global30ht=$((global30ht + 1))
   elif awk "BEGIN {if ($thetime < 30) exit 0; exit 1}"; then
     global30=$((global30 + 1))
+    global30ht=$((global30ht + 1))
   elif awk "BEGIN {if ($thetime > 30) exit 0; exit 1}"; then
     global10=0
+    global10ht=0
     global15=0
+    global15ht=0
     global20=0
+    global20ht=0
     global25=0
+    global25ht=0
     global30=0
+    global30ht=0
+  fi
+}
+
+function hatricks()
+{
+  if [ $global10ht -eq 3 ]; then
+    if $congrats10enabled; then
+      congrats "AMAZE BALLZ !!!" "SUB 10 HATRICK" 5
+    fi
+    global10ht=0
+  elif [ $global15ht -eq 3 ]; then
+    if $congrats15enabled; then
+      congrats "O M G !" "SUB 15 HATRICK" 3
+    fi
+    global15ht=0
+  elif [ $global20ht -eq 3 ]; then
+    if $congrats20enabled; then
+      congrats "yeah baby yeah!" "SUB 20 HATRICK" 3
+    fi
+    global20ht=0
+  elif [ $global25ht -eq 3 ]; then
+    if $congrats25enabled; then
+      congrats "noice!" "SUB 25 HATRICK" 3
+    fi
+    global25ht=0
+  elif [ $global30ht -eq 3 ]; then
+    if $congrats30enabled; then
+      congrats "yay" "SUB 30 HATRICK" 2
+    fi
+    global30ht=0
   fi
 }
 
@@ -159,6 +256,7 @@ function minmax()
 
 function stats()
 {
+  amo3=$1
   totalsolves=${#solvesArray[@]}
   numbers=""
 
@@ -183,7 +281,23 @@ function stats()
   yesterday=$(date -u -d @$(($(date +%s)-86400)) +%Y-%m-%d)
   todaycount=$(printf '%s\n' "${solvesArray[@]}" |grep $today | wc | awk '{print $1}')
   yesterdaycount=$(printf '%s\n' "${solvesArray[@]}" |grep $yesterday | wc | awk '{print $1}')
-  echo -n "solves|$totalsolves  today|$todaycount  yesterday|$yesterdaycount  best|$min  worst|$max  "
+  totaldays=$(printf '%s\n' "${solvesArray[@]}" |awk '{print $1}' | sort -u | wc | awk '{print $1}')
+  avgpday=$((totalsolves/totaldays))
+
+  # solves
+  printf "%-11s %-14s %-14s %-14s %-14s %-14s\n" " " "total" "today" "yesterday" "total-days" "avg-per-day"
+  printf "%11s %-14s %-14s %-14s %-14s %-14s\n" "solves:" $totalsolves $todaycount $yesterdaycount $totaldays $avgpday
+
+  echo
+
+  todayminmax=$(todaystats)
+  todaymin=$(echo $todayminmax | awk '{print $1}')
+  todaymax=$(echo $todayminmax | awk '{print $2}')
+  todayminglobal=$todaymin
+
+  # times
+  printf "%-11s %-14s %-14s %-14s %-14s %-14s\n" " " "best" "worst" "best-today" "worst-today" "mo3"
+  printf "%11s %-14s %-14s %-14s %-14s %-14s" "times:" $min $max $todaymin $todaymax $amo3
 } 
 
 function todaystats()
@@ -195,8 +309,7 @@ function todaystats()
     numbers="${numbers} ${element}"
   done < <(printf '%s\n' "${solvesArray[@]}" | grep ${today} | awk -F, '{print $2}')
   minandmax=$(minmax "$numbers")
-  todayminglobal=$(echo $minandmax | awk '{print $1}')
-  echo "best-today|$todayminglobal  worst-today|$(echo $minandmax | awk '{print $2}')"
+  echo "$minandmax"
 }
 
 function mo3()
@@ -211,7 +324,7 @@ function mo3()
     total=$(awk "BEGIN {print $total + $value}")
   done < <(printf '%s\n' "${sortedArray[@]}" | head -3 | awk -F, '{print $2}')
   mo3=$(awk "BEGIN {print $total / 3}")
-  printf "mo3|%0.2f" $mo3
+  printf "%0.2f" $mo3
 }
 
 function aox()
@@ -248,7 +361,7 @@ function aox()
 
   aof=$(awk "BEGIN {print $total / $totalcount}")
 
-  printf "${title}|%0.2f" $aof
+  printf "%0.2f" $aof
 }
 
 function congrats()
@@ -266,9 +379,14 @@ function congrats()
 #
 
 tput civis
-timeresult=false ; del_time=false ; log_change=false ; globallog="5" 
+timeresult=false ; del_time=false ; log_change=false ; reload=false ; globallog="5" 
 calculateprevious=true
 calculateminmax=true
+congrats10enabled=true
+congrats15enabled=true
+congrats20enabled=true
+congrats25enabled=true
+congrats30enabled=true
 showprevao=true
 pb=9999
 spacer="                    "
@@ -280,10 +398,10 @@ streakinit
 
 while true; do
   counter=0
-  if ! $del_time && ! $log_change; then
+  if ! $del_time && ! $log_change && ! $reload; then
     scramble=$(scramble)
   else
-    if ! $log_change; then
+    if ! $log_change && ! $reload; then
       del_time=false
       thetime=$(tail -1 $solvesfile | awk -F, '{print $2}')
       sed -i --follow-symlinks '$ d' ${solvesfile}
@@ -304,6 +422,7 @@ while true; do
   if $timeresult ; then
 
     streakupdate "$result"
+    hatricks
     timeresult=false
 
     if ! $calculateminmax ; then
@@ -314,21 +433,21 @@ while true; do
         globalmax=$result
       fi
     fi
-
     clear
-    echo ; echo "${scramble}"
-    echo ; printf "${spacer}%0.2f" $result
-    if ! $another_scramble && ! $log_change; then
+    formattedresult=$(printf "Time  ==>  %0.2f" $result)
+    if ! $another_scramble && ! $log_change && ! $reload; then
       echo "`date +%Y-%m-%d" "%H:%M:%S`,${result},${scramble}" >> $solvesfile
       solvesArray+=("`date +%Y-%m-%d" "%H:%M:%S`,${result},${scramble}")
     fi
-
   else
-    echo ; echo "${scramble}" ; echo
+    if ! $another_scramble && ! $log_change; then
+      formattedresult=""
+    fi
   fi
 
-  echo ; showlog "${globallog}"
-  echo ; stats ; mo3
+  showlog "${globallog}" "${scramble}" "${formattedresult}"
+  themo3=$(mo3)
+  echo ; stats "$themo3"
   echo ; echo
 
   if [[ "${#globalmin}" -eq 0 ]] || [ "${globalmax}" == "${globalmin}" ] ; then
@@ -338,71 +457,61 @@ while true; do
   fi
 
   ao5=$(aox "5")
-  ao5val=$(echo ${ao5} | awk -F\| '{print $2}')
   ao12=$(aox "12")
-  ao12val=$(echo ${ao12} | awk -F\| '{print $2}')
   ao25=$(aox "25")
-  ao25val=$(echo ${ao25} | awk -F\| '{print $2}')
   ao50=$(aox "50")
-  ao50val=$(echo ${ao50} | awk -F\| '{print $2}')
   ao100=$(aox "100")
-  ao100val=$(echo ${ao100} | awk -F\| '{print $2}')
 
   if $calculateprevious && $showprevao; then
     ao5p=$(aox "5" "2")
-    ao5pval=$(echo ${ao5p} | awk -F\| '{print $2}')
-    ao5pvalArray+=("${ao5pval}")
-    ao5pvalArray+=("${ao5pval}")
+    ao5pvalArray+=("${ao5p}")
+    ao5pvalArray+=("${ao5p}")
   
     ao12p=$(aox "12" "2")
-    ao12pval=$(echo ${ao12p} | awk -F\| '{print $2}')
-    ao12pvalArray+=("${ao12pval}")
-    ao12pvalArray+=("${ao12pval}")
+    ao12pvalArray+=("${ao12p}")
+    ao12pvalArray+=("${ao12p}")
   
     ao25p=$(aox "25" "2")
-    ao25pval=$(echo ${ao25p} | awk -F\| '{print $2}')
-    ao25pvalArray+=("${ao25pval}")
-    ao25pvalArray+=("${ao25pval}")
+    ao25pvalArray+=("${ao25p}")
+    ao25pvalArray+=("${ao25p}")
   
     ao50p=$(aox "50" "2")
-    ao50pval=$(echo ${ao50p} | awk -F\| '{print $2}')
-    ao50pvalArray+=("${ao50pval}")
-    ao50pvalArray+=("${ao50pval}")
+    ao50pvalArray+=("${ao50p}")
+    ao50pvalArray+=("${ao50p}")
   
     ao100p=$(aox "100" "2")
-    ao100pval=$(echo ${ao100p} | awk -F\| '{print $2}')
-    ao100pvalArray+=("${ao100pval}")
-    ao100pvalArray+=("${ao100pval}")
+    ao100pvalArray+=("${ao100p}")
+    ao100pvalArray+=("${ao100p}")
 
     calculateprevious=false
   
   else
 
     if ! $another_scramble && $showprevao; then
-      ao5pvalArray+=("${ao5val}")
-      ao12pvalArray+=("${ao12val}")
-      ao25pvalArray+=("${ao25val}")
-      ao50pvalArray+=("${ao50val}")
-      ao100pvalArray+=("${ao100val}")
+      ao5pvalArray+=("${ao5}")
+      ao12pvalArray+=("${ao12}")
+      ao25pvalArray+=("${ao25}")
+      ao50pvalArray+=("${ao50}")
+      ao100pvalArray+=("${ao100}")
     fi
 
   fi
 
   if $showprevao; then 
     if [ ${ao5pvalArray[-2]} ]; then
-      ao5diff="($(awk "BEGIN {printf \"%.2f\", $ao5val-${ao5pvalArray[-2]}}"))"
+      ao5diff="($(awk "BEGIN {printf \"%.2f\", $ao5-${ao5pvalArray[-2]}}"))"
     fi
     if [ ${ao12pvalArray[-2]} ]; then
-      ao12diff="($(awk "BEGIN {printf \"%.2f\", $ao12val-${ao12pvalArray[-2]}}"))"
+      ao12diff="($(awk "BEGIN {printf \"%.2f\", $ao12-${ao12pvalArray[-2]}}"))"
     fi
     if [ ${ao25pvalArray[-2]} ]; then
-      ao25diff="($(awk "BEGIN {printf \"%.2f\", $ao25val-${ao25pvalArray[-2]}}"))"
+      ao25diff="($(awk "BEGIN {printf \"%.2f\", $ao25-${ao25pvalArray[-2]}}"))"
     fi
     if [ ${ao50pvalArray[-2]} ]; then
-      ao50diff="($(awk "BEGIN {printf \"%.2f\", $ao50val-${ao50pvalArray[-2]}}"))"
+      ao50diff="($(awk "BEGIN {printf \"%.2f\", $ao50-${ao50pvalArray[-2]}}"))"
     fi
     if [ ${ao100pvalArray[-2]} ]; then
-      ao100diff="($(awk "BEGIN {printf \"%.2f\", $ao100val-${ao100pvalArray[-2]}}"))"
+      ao100diff="($(awk "BEGIN {printf \"%.2f\", $ao100-${ao100pvalArray[-2]}}"))"
     fi
   else
     ao5diff=""
@@ -412,14 +521,24 @@ while true; do
     ao100diff=""
   fi
 
-  echo -n "$ao5$ao5diff  $ao12$ao12diff  $ao25$ao25diff  $ao50$ao50diff  $ao100$ao100diff"
-  echo ; echo
-  todaystats
-  echo ; echo -n "<10|$global10  <15|$global15  <20|$global20  <25|$global25  <30|$global30"
-  echo ; echo ; echo "[space] / [s]cramble / [d]elete / [p]reviousdiff / [q]uit"
+  # ao's
+  printf "%-11s %-14s %-14s %-14s %-14s %-14s\n" " " "ao5" "ao12" "ao25" "ao50" "ao100"
+  printf "%11s %-14s %-14s %-14s %-14s %-14s\n" "averages:" $ao5 $ao12 $ao25 $ao50 $ao100
+
+  if $showprevao ; then
+    printf "%11s %-14s %-14s %-14s %-14s %-14s\n" " " $ao5diff $ao12diff $ao25diff $ao50diff $ao100diff
+  fi
+
+  # streaks
+  printf "\n%-11s %-14s %-14s %-14s %-14s %-14s\n" " " "<10" "<15" "<20" "<25" "<30"
+  printf "%11s %-14s %-14s %-14s %-14s %-14s\n" "streaks:" $global10 $global15 $global20 $global25 $global30
+
+  echo
+  echo ; echo ; echo "[space] / [s]cramble / [d]elete / [p]reviousdiff / [c]ongrats / [q]uit"
 
   another_scramble=false
   log_change=false
+  reload=false
 
   while [ "$key" != " " ] && IFS=""; do
    read -s -n 1 -t 0.1 key
@@ -433,6 +552,52 @@ while true; do
    elif [ "$key" == "d" ]; then
      del_time=true
      calculateminmax=true
+     break
+   elif [ "$key" == "c" ]; then
+     reload=true
+     if ! $congrats10enabled && ! $congrats15enabled && ! $congrats20enabled && ! $congrats25enabled && ! $congrats30enabled; then
+       congrats10enabled=true
+       congrats15enabled=true
+       congrats20enabled=true
+       congrats25enabled=true
+       congrats30enabled=true
+       echo ; echo "CONGRATULATIONS:   <10|enabled  <15|enabled  <20|enabled  <25|enabled  <30|enabled" ; echo ; sleep 2
+     elif $congrats10enabled && $congrats15enabled && $congrats20enabled && $congrats25enabled && $congrats30enabled; then
+       congrats10enabled=true
+       congrats15enabled=true
+       congrats20enabled=true
+       congrats25enabled=true
+       congrats30enabled=false
+       echo ; echo "CONGRATULATIONS:   <10|enabled  <15|enabled  <20|enabled  <25|enabled  <30|DISABLED" ; echo ; sleep 2
+     elif $congrats10enabled && $congrats15enabled && $congrats20enabled && $congrats25enabled && ! $congrats30enabled; then
+       congrats10enabled=true
+       congrats15enabled=true
+       congrats20enabled=true
+       congrats25enabled=false
+       congrats30enabled=false
+       echo ; echo "CONGRATULATIONS:   <10|enabled  <15|enabled  <20|enabled  <25|DISABLED  <30|DISABLED" ; echo ; sleep 2
+     elif $congrats10enabled && $congrats15enabled && $congrats20enabled && ! $congrats25enabled && ! $congrats30enabled; then
+       congrats10enabled=true
+       congrats15enabled=true
+       congrats20enabled=false
+       congrats25enabled=false
+       congrats30enabled=false
+       echo ; echo "CONGRATULATIONS:   <10|enabled  <15|enabled  <20|DISABLED  <25|DISABLED  <30|DISABLED" ; echo ; sleep 2
+     elif $congrats10enabled && $congrats15enabled && ! $congrats20enabled && ! $congrats25enabled && ! $congrats30enabled; then
+       congrats10enabled=true
+       congrats15enabled=false
+       congrats20enabled=false
+       congrats25enabled=false
+       congrats30enabled=false
+       echo ; echo "CONGRATULATIONS:   <10|enabled  <15|DISABLED  <20|DISABLED  <25|DISABLED  <30|DISABLED" ; echo ; sleep 2
+     elif $congrats10enabled && ! $congrats15enabled && ! $congrats20enabled && ! $congrats25enabled && ! $congrats30enabled; then
+       congrats10enabled=false
+       congrats15enabled=false
+       congrats20enabled=false
+       congrats25enabled=false
+       congrats30enabled=false
+       echo ; echo "CONGRATULATIONS:   <10|DISABLED  <15|DISABLED  <20|DISABLED  <25|DISABLED  <30|DISABLED" ; echo ; sleep 2
+     fi
      break
    elif [ "$key" == "p" ]; then
      if $showprevao; then
@@ -450,13 +615,17 @@ while true; do
    fi
   done
 
-  if $another_scramble || $del_time || $log_change ; then
+  if $another_scramble || $del_time || $log_change || $reload ; then
     continue
   fi 
 
   clear
-  echo ; echo "${scramble}"
-  echo ; echo "${spacer}ready..." ; echo
+  echo ; echo ; echo
+  printf "   %19s    %5s  " " " " "
+  echo "${scramble}"
+  echo ; echo
+  printf "   %19s    %5s  " " " " "
+  echo "ready..."
 
   while true && IFS=""; do
     read -s -n 1 -t 0.1 key
