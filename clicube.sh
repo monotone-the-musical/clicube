@@ -73,11 +73,11 @@ function showlog()
 
 function streakinit()
 {
-  global10hit=false
-  global15hit=false
-  global20hit=false
-  global25hit=false
-  global30hit=false
+  global10allowcalc=true
+  global15allowcalc=true
+  global20allowcalc=true
+  global25allowcalc=true
+  global30allowcalc=true
   echo "loading..."
   global10=0
   global10ht=0
@@ -93,61 +93,80 @@ function streakinit()
   for record in "${sortedArray[@]}"; do
     thetime=$(echo "$record" | awk -F, '{print $2}')
     if awk "BEGIN {if ($thetime < 10) exit 0; exit 1}"; then
-      if ! $global15hit && ! $global20hit && ! $global25hit && ! $global30hit ; then
+      if $global10allowcalc; then
         global10=$((global10 + 1))
         global10ht=$((global10ht + 1))
+      fi
+      if $global15allowcalc; then
         global15=$((global15 + 1))
         global15ht=$((global15ht + 1))
+      fi
+      if $global20allowcalc; then
         global20=$((global20 + 1))
         global20ht=$((global20ht + 1))
+      fi
+      if $global25allowcalc; then
         global25=$((global25 + 1))
         global25ht=$((global25ht + 1))
+      fi
+      if $global30allowcalc; then
         global30=$((global30 + 1))
         global30ht=$((global30ht + 1))
-        global10hit=true
-      else
-        break
       fi
     elif awk "BEGIN {if ($thetime < 15) exit 0; exit 1}"; then
-      if ! $global20hit && ! $global25hit && ! $global30hit ; then
+      global10allowcalc=false
+      if $global15allowcalc; then
         global15=$((global15 + 1))
         global15ht=$((global15ht + 1))
+      fi
+      if $global20allowcalc; then
         global20=$((global20 + 1))
         global20ht=$((global20ht + 1))
+      fi
+      if $global25allowcalc; then
         global25=$((global25 + 1))
         global25ht=$((global25ht + 1))
+      fi
+      if $global30allowcalc; then
         global30=$((global30 + 1))
         global30ht=$((global30ht + 1))
-        global15hit=true
-      else
-        break
       fi
     elif awk "BEGIN {if ($thetime < 20) exit 0; exit 1}"; then
-      if ! $global25hit && ! $global30hit ; then
+      global10allowcalc=false
+      global15allowcalc=false
+      if $global20allowcalc; then
         global20=$((global20 + 1))
         global20ht=$((global20ht + 1))
+      fi
+      if $global25allowcalc; then
         global25=$((global25 + 1))
         global25ht=$((global25ht + 1))
+      fi
+      if $global30allowcalc; then
         global30=$((global30 + 1))
         global30ht=$((global30ht + 1))
-        global20hit=true
-      else
-        break
       fi
     elif awk "BEGIN {if ($thetime < 25) exit 0; exit 1}"; then
-      if ! $global30hit ; then
+      global10allowcalc=false
+      global15allowcalc=false
+      global20allowcalc=false
+      if $global25allowcalc; then
         global25=$((global25 + 1))
         global25ht=$((global25ht + 1))
+      fi
+      if $global30allowcalc; then
         global30=$((global30 + 1))
         global30ht=$((global30ht + 1))
-        global25hit=true
-      else
-        break
       fi
     elif awk "BEGIN {if ($thetime < 30) exit 0; exit 1}"; then
-      global30=$((global30 + 1))
-      global30ht=$((global30ht + 1))
-      global30hit=true
+      global10allowcalc=false
+      global15allowcalc=false
+      global20allowcalc=false
+      global25allowcalc=false
+      if $global30allowcalc; then
+        global30=$((global30 + 1))
+        global30ht=$((global30ht + 1))
+      fi
     elif awk "BEGIN {if ($thetime > 30) exit 0; exit 1}"; then
       break 
     fi
@@ -169,6 +188,8 @@ function streakupdate()
     global30=$((global30 + 1))
     global30ht=$((global30ht + 1))
   elif awk "BEGIN {if ($thetime < 15) exit 0; exit 1}"; then
+    global10=0
+    global10hit=0
     global15=$((global15 + 1))
     global15ht=$((global15ht + 1))
     global20=$((global20 + 1))
@@ -178,6 +199,10 @@ function streakupdate()
     global30=$((global30 + 1))
     global30ht=$((global30ht + 1))
   elif awk "BEGIN {if ($thetime < 20) exit 0; exit 1}"; then
+    global10=0
+    global10hit=0
+    global15=0
+    global15hit=0
     global20=$((global20 + 1))
     global20ht=$((global20ht + 1))
     global25=$((global25 + 1))
@@ -185,11 +210,25 @@ function streakupdate()
     global30=$((global30 + 1))
     global30ht=$((global30ht + 1))
   elif awk "BEGIN {if ($thetime < 25) exit 0; exit 1}"; then
+    global10=0
+    global10hit=0
+    global15=0
+    global15hit=0
+    global20=0
+    global20hit=0
     global25=$((global25 + 1))
     global25ht=$((global25ht + 1))
     global30=$((global30 + 1))
     global30ht=$((global30ht + 1))
   elif awk "BEGIN {if ($thetime < 30) exit 0; exit 1}"; then
+    global10=0
+    global10hit=0
+    global15=0
+    global15hit=0
+    global20=0
+    global20hit=0
+    global25=0
+    global25hit=0
     global30=$((global30 + 1))
     global30ht=$((global30ht + 1))
   elif awk "BEGIN {if ($thetime > 30) exit 0; exit 1}"; then
