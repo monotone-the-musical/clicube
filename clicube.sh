@@ -36,39 +36,50 @@ function showlog()
 {
   toshow=$1
   ascramble=$2
-  atime=$3
+  atime=$(check_for_mins $3)
+
   echo ; echo "Last ${toshow}:"
   IFS=$'\n' sortedArray=($(sort -r <<<"${solvesArray[*]}")) ; unset IFS
-  echo ".-----------------------------."
+  echo ".--------------------------------."
   for ((i = 0; i <= $toshow-1; i++)); do
     if [[ ${sortedArray[$i]} ]]; then
       if [ "$i" -gt 0 ]; then
         if [ "$i" -eq 3 ]; then
-          echo "${sortedArray[$i]}" | awk -F, '{printf "| %19s | %5s |",$1,$2}'
-          echo "  ${atime}"
+          thetime=$(check_for_mins $(echo ${sortedArray[$i]} | awk -F, '{print $2}'))
+          echo "${sortedArray[$i]}" | awk -F, '{printf "| %19s | ",$1}'
+          printf "%8s |" $thetime
+          if [ "$atime" != "" ]; then
+            echo "  Time  ==>  ${atime}"
+          else
+            echo
+          fi
         else
-          echo "${sortedArray[$i]}" | awk -F, '{printf "| %19s | %5s |\n",$1,$2}'
+          thetime=$(check_for_mins $(echo ${sortedArray[$i]} | awk -F, '{print $2}'))
+          echo "${sortedArray[$i]}" | awk -F, '{printf "| %19s | ",$1}'
+          printf "%8s |\n" $thetime
         fi
       else
-        echo "${sortedArray[$i]}" | awk -F, '{printf "| %19s | %5s |",$1,$2}'
+        thetime=$(check_for_mins $(echo ${sortedArray[$i]} | awk -F, '{print $2}'))
+        echo "${sortedArray[$i]}" | awk -F, '{printf "| %19s | ",$1}'
+        printf "%8s |" $thetime
         echo "  ${ascramble}"
       fi
     else
       if [ "$i" -gt 0 ]; then
         if [ "$i" -eq 3 ]; then
-          printf "| %19s | %5s |" " " " "
+          printf "| %19s | %8s |" " " " "
           echo "  ${atime}"
         else
-          printf "| %19s | %5s |\n" " " " "
+          printf "| %19s | %8s |\n" " " " "
         fi
       else
-        printf "| %19s | %5s |" " " " "
+        printf "| %19s | %8s |" " " " "
         echo "  ${ascramble}"
       fi
     fi
   done
 
-  echo "'-----------------------------'"
+  echo "'--------------------------------'"
 }
 
 function streakinit()
@@ -297,6 +308,7 @@ function stats()
 {
   amo3=$1
   totalsolves=${#solvesArray[@]}
+  globalsolves=$totalsolves
   numbers=""
 
   if $calculateminmax ; then
@@ -334,9 +346,15 @@ function stats()
   todaymax=$(echo $todayminmax | awk '{print $2}')
   todayminglobal=$todaymin
 
+  minfmt=$(check_for_mins $min)
+  maxfmt=$(check_for_mins $max)
+  todayminfmt=$(check_for_mins $todaymin)
+  todaymaxfmt=$(check_for_mins $todaymax)
+  amo3fmt=$(check_for_mins $amo3)
+
   # times
   printf "%-11s %-14s %-14s %-14s %-14s %-14s\n" " " "best" "worst" "best-today" "worst-today" "mo3"
-  printf "%11s %-14s %-14s %-14s %-14s %-14s" "times:" $min $max $todaymin $todaymax $amo3
+  printf "%11s %-14s %-14s %-14s %-14s %-14s" "times:" $minfmt $maxfmt $todayminfmt $todaymaxfmt $amo3fmt
 } 
 
 function todaystats()
@@ -405,12 +423,37 @@ function aox()
 
 function congrats()
 {
-  atime=$1
+  if [[ "$1" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+    atime=$(check_for_mins $1)
+  else
+    atime=$1
+  fi
   amessage=$2
   asleeptime=$3
   clear ; echo ; echo ; echo
   echo  "$spacerNEW  * * * ${amessage} * * *    ${atime}    * * * ${amessage} * * *"
   sleep $asleeptime
+}
+
+function check_for_mins {
+  if [ "$1" != "" ]; then
+    if awk "BEGIN {if ($1 >= 60) exit 0; exit 1}"; then
+      local int_seconds=$(printf "%.0f" "$1")
+      local hundredths=$(printf "%.2f" "$1")
+      local hundredths=${hundredths#*.}
+      local minutes=$((int_seconds / 60))
+      local seconds=$((int_seconds % 60))
+      if [ "$minutes" -lt 10 ]; then
+        minutes="0$minutes"
+      fi
+      if [ "$seconds" -lt 10 ]; then
+        seconds="0$seconds"
+      fi
+      echo "${minutes}:${seconds}.${hundredths}"
+    else
+      echo $1
+    fi
+  fi
 }
 
 #
@@ -473,7 +516,7 @@ while true; do
       fi
     fi
     clear
-    formattedresult=$(printf "Time  ==>  %0.2f" $result)
+    formattedresult=$(printf "%0.2f" $result)
     if ! $another_scramble && ! $log_change && ! $reload; then
       echo "`date +%Y-%m-%d" "%H:%M:%S`,${result},${scramble}" >> $solvesfile
       solvesArray+=("`date +%Y-%m-%d" "%H:%M:%S`,${result},${scramble}")
@@ -561,8 +604,15 @@ while true; do
   fi
 
   # ao's
+
+  ao5fmt=$(check_for_mins $ao5)
+  ao12fmt=$(check_for_mins $ao12)
+  ao25fmt=$(check_for_mins $ao25)
+  ao50fmt=$(check_for_mins $ao50)
+  ao100fmt=$(check_for_mins $ao100)
+
   printf "%-11s %-14s %-14s %-14s %-14s %-14s\n" " " "ao5" "ao12" "ao25" "ao50" "ao100"
-  printf "%11s %-14s %-14s %-14s %-14s %-14s\n" "averages:" $ao5 $ao12 $ao25 $ao50 $ao100
+  printf "%11s %-14s %-14s %-14s %-14s %-14s\n" "averages:" $ao5fmt $ao12fmt $ao25fmt $ao50fmt $ao100fmt
 
   if $showprevao ; then
     printf "%11s %-14s %-14s %-14s %-14s %-14s\n" " " $ao5diff $ao12diff $ao25diff $ao50diff $ao100diff
@@ -660,10 +710,10 @@ while true; do
 
   clear
   echo ; echo ; echo
-  printf "   %19s    %5s  " " " " "
+  printf "   %19s    %8s  " " " " "
   echo "${scramble}"
   echo ; echo
-  printf "   %19s    %5s  " " " " "
+  printf "   %19s    %8s  " " " " "
   echo "ready..."
 
   while true && IFS=""; do
@@ -691,11 +741,18 @@ while true; do
         timeresult=true
         checkpb=$(minmax "$result $pb" | awk '{print $1}')
         checktodaypb=$(minmax "$result $todayminglobal" | awk '{print $1}')
+        thousandcheck=$((globalsolves + 1))
+
         if [ $result == $checkpb ]; then
           congrats $result "NEW PB" "3"
         elif [ $result == $checktodaypb ]; then
           congrats $result "BEST TIME TODAY" "2"
         fi
+
+        if [ $((thousandcheck % 1000)) -eq 0 ]; then
+          congrats "YOU'VE COMPLETED $thousandcheck SOLVES !!" " TOTES AWESOME" 10
+        fi
+
         break
       fi
     fi
