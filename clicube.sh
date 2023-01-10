@@ -330,6 +330,7 @@ function stats()
 
   today=$(date +%Y-%m-%d)
   yesterday=$(date -u -d @$(($(date +%s)-86400)) +%Y-%m-%d)
+  yesterday=$(date --date='yesterday' +%Y-%m-%d)
   todaycount=$(printf '%s\n' "${solvesArray[@]}" |grep $today | wc | awk '{print $1}')
   yesterdaycount=$(printf '%s\n' "${solvesArray[@]}" |grep $yesterday | wc | awk '{print $1}')
   totaldays=$(printf '%s\n' "${solvesArray[@]}" |awk '{print $1}' | sort -u | wc | awk '{print $1}')
