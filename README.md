@@ -4,6 +4,7 @@
 
 | version | release date | details                                 |
 | ------- | ------------ | --------------------------------------- |
+| v1.0.6  | 31/01/2023   | date bugfix                             |
 | v1.0.5  | 08/01/2023   | bugfixes for streaks / hatricks <br> handles times over 60 seconds <br> congratulations for every 1000 solves |
 | v1.0.4  | 06/01/2023   | cleanup display output with printf <br> total days <br> average per day <br> congrats message on streaks hatrick |
 | v1.0.3  | 05/01/2023   | streaks count <br> best and worst for today |
