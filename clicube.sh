@@ -6,6 +6,8 @@ solvesfile="${HOME}/clicube.csv"
 scramblesize=20
 timerpattern="|"
 patternlength="10"
+defaultloglength="10"
+musicstream="https://youtu.be/MVPTGNGiI-4" # synthwave radio - beats to chill/game to
 # ---------------------------------
 
 function scramble()
@@ -462,7 +464,7 @@ function check_for_mins {
 #
 
 tput civis
-timeresult=false ; del_time=false ; log_change=false ; reload=false ; globallog="5" 
+timeresult=false ; del_time=false ; log_change=false ; reload=false ; globallog="$defaultloglength" ; toggle_music=false
 calculateprevious=true
 calculateminmax=true
 congrats10enabled=true
@@ -473,6 +475,7 @@ congrats30enabled=true
 showprevao=true
 pb=9999
 spacer="                    "
+mpv_pid="NOTSET"
 
 touch $solvesfile
 mapfile -t solvesArray < $solvesfile
@@ -481,10 +484,10 @@ streakinit
 
 while true; do
   counter=0
-  if ! $del_time && ! $log_change && ! $reload; then
+  if ! $del_time && ! $log_change && ! $reload && ! $toggle_music; then
     scramble=$(scramble)
   else
-    if ! $log_change && ! $reload; then
+    if ! $log_change && ! $reload && ! $toggle_music; then
       del_time=false
       thetime=$(tail -1 $solvesfile | awk -F, '{print $2}')
       sed -i --follow-symlinks '$ d' ${solvesfile}
@@ -624,19 +627,25 @@ while true; do
   printf "%11s %-14s %-14s %-14s %-14s %-14s\n" "streaks:" $global10 $global15 $global20 $global25 $global30
 
   echo
-  echo ; echo ; echo "[space] / [s]cramble / [d]elete / [p]reviousdiff / [c]ongrats / [q]uit"
+  echo ; echo ; echo "[space] / [s]cramble / [d]elete / [p]reviousdiff / [c]ongrats / [m]usic / [q]uit"
 
   another_scramble=false
+  toggle_music=false
   log_change=false
   reload=false
 
   while [ "$key" != " " ] && IFS=""; do
    read -s -n 1 -t 0.1 key
    if [ "$key" == "q" ]; then
+     kill $mpv_pid 2>/dev/null
      tput cnorm
      echo ; exit
    elif [ "$key" == "s" ]; then
      another_scramble=true
+     timeresult=false
+     break
+   elif [ "$key" == "m" ]; then
+     toggle_music=true
      timeresult=false
      break
    elif [ "$key" == "d" ]; then
@@ -705,7 +714,24 @@ while true; do
    fi
   done
 
-  if $another_scramble || $del_time || $log_change || $reload ; then
+  if $toggle_music; then
+    softwarecheck=$(which mpv)
+    music_check=$(ps -ef |grep -i mpv |grep -v grep |grep -i no-video | wc | awk '{print $1}')
+    if [ "$softwarecheck" != "" ]; then
+      if [ "$music_check" == "0" ]; then
+        mpv --no-video "$musicstream" > /dev/null 2>&1 &
+        mpv_pid=$!
+        echo ; echo "... streaming music..." ; echo ; sleep 1
+      else
+        kill $mpv_pid 2>/dev/null
+        echo ; echo "... music off..." ; echo ; sleep 1
+      fi
+    else
+      echo ; echo "... mpv not installed..." ; echo ; sleep 1
+    fi
+  fi
+
+  if $another_scramble || $del_time || $log_change || $toggle_music || $reload ; then
     continue
   fi 
 

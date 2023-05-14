@@ -4,6 +4,7 @@
 
 | version | release date | details                                 |
 | ------- | ------------ | --------------------------------------- |
+| v1.0.7  | 14/05/2023   | added streaming music                   |
 | v1.0.6  | 31/01/2023   | date bugfix                             |
 | v1.0.5  | 08/01/2023   | bugfixes for streaks / hatricks <br> handles times over 60 seconds <br> congratulations for every 1000 solves |
 | v1.0.4  | 06/01/2023   | cleanup display output with printf <br> total days <br> average per day <br> congrats message on streaks hatrick |
@@ -40,6 +41,7 @@ If you want to access the program from anywhere, place the following command on 
 
 - GNU bash version 5 and up
 - Mac OS currently not supported
+- mpv (optional, to stream music)
 
 ## Commands
 
@@ -52,6 +54,7 @@ If you want to access the program from anywhere, place the following command on 
 - **p**: toggle showing time difference of \[p\]revious average.
 - **c**: toggle showing \[c\]ongratulations message for streaks hatricks.
 - **1** - **9**: list recorded times (x 5).
+- **m**: stream \[m\]usic.
 - **q**: \[q\]uit.
 
 ## Stats
