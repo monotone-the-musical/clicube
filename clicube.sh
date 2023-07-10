@@ -7,7 +7,7 @@ scramblesize=20
 timerpattern="|"
 patternlength="10"
 defaultloglength="10"
-musicstream="https://youtu.be/MVPTGNGiI-4" # synthwave radio - beats to chill/game to
+musicstream="https://youtu.be/4xDzrJKXOOY" # synthwave radio - beats to chill/game to
 # ---------------------------------
 
 function scramble()
